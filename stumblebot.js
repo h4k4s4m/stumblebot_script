@@ -284,7 +284,8 @@ class CommandHandler {
 
     handleRules(websocket) {
         this.sendMessage(websocket, MESSAGES.RULES_IMAGE);
-    } startTokeCountdown(totalSeconds, websocket) {
+    } 
+    startTokeCountdown(totalSeconds, websocket) {
         if (TimerState.tokeCountdownInterval) {
             clearInterval(TimerState.tokeCountdownInterval);
         }
@@ -317,9 +318,7 @@ class CommandHandler {
                 this.sendMessage(websocket, MESSAGES.TOKE_REMAINING.replace('{seconds}', secondsRemaining));
             } else if (secondsRemaining <= 30 && secondsRemaining > 10 && secondsRemaining % 10 === 0) {
                 this.sendMessage(websocket, `⏱️ ${secondsRemaining} seconds remaining!`);
-            } else if (secondsRemaining <= 10 && secondsRemaining > 0) {
-                this.sendMessage(websocket, `${secondsRemaining}...`);
-            }
+            } 
 
             // If we're near the end time, adjust the interval to ensure we hit exactly 0
             if (secondsRemaining <= 3 && endTime - currentTime > 1000) {
