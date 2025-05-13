@@ -74,7 +74,7 @@ class MessageQueue {
             RATE_LIMIT.MESSAGE_DELAY = messageDelay;
             console.log(`Message delay updated to ${messageDelay}ms`);
         }
-        
+
         if (typeof priorityDelay === 'number' && priorityDelay > 0) {
             RATE_LIMIT.PRIORITY_DELAY = priorityDelay;
             console.log(`Priority delay updated to ${priorityDelay}ms`);
@@ -88,7 +88,7 @@ class MessageQueue {
             isPriority,
             timestamp: Date.now()
         };
-        
+
         // Insert priority messages at the front of the queue
         if (isPriority && this.queue.length > 0) {
             // Find the last priority message or the start of the queue
@@ -103,9 +103,9 @@ class MessageQueue {
         } else {
             this.queue.push(message);
         }
-        
+
         console.log(`Added message to queue. Queue length: ${this.queue.length}`);
-        
+
         if (!this.processing) {
             this.processQueue();
         }
@@ -121,10 +121,10 @@ class MessageQueue {
         const now = Date.now();
         const message = this.queue.shift();
         const timeSinceLastSend = now - this.lastSentTime;
-        const delay = message.isPriority ? 
-            Math.max(0, RATE_LIMIT.PRIORITY_DELAY - timeSinceLastSend) : 
+        const delay = message.isPriority ?
+            Math.max(0, RATE_LIMIT.PRIORITY_DELAY - timeSinceLastSend) :
             Math.max(0, RATE_LIMIT.MESSAGE_DELAY - timeSinceLastSend);
-        
+
         setTimeout(() => {
             try {
                 message.websocket._send(message.data);
@@ -133,9 +133,9 @@ class MessageQueue {
             } catch (error) {
                 console.error('Error sending message:', error);
             }
-            
+
             // Process next message with a minimum delay
-            setTimeout(() => this.processQueue(), message.isPriority ? 
+            setTimeout(() => this.processQueue(), message.isPriority ?
                 RATE_LIMIT.PRIORITY_DELAY : RATE_LIMIT.MESSAGE_DELAY);
         }, delay);
     }
@@ -196,7 +196,7 @@ class TimerManager {
             TimerState.lastSentHour = currentHour;
             TimerState.shouldSendMessage = true;
         }
-    }    static checkRulesTimer(websocket) {
+    } static checkRulesTimer(websocket) {
         const now = new Date().getTime();
         if (!TimerState.tokeCountdownActive && (now - TimerState.lastRulesPost >= rules_time)) {
             TimerState.lastRulesPost = now;
@@ -209,7 +209,7 @@ class TimerManager {
                 }
             }
         }
-    }    static checkSuggestionsTimer(websocket) {
+    } static checkSuggestionsTimer(websocket) {
         const now = new Date().getTime();
         if (!TimerState.tokeCountdownActive && (now - TimerState.lastRulesPost >= suggestion_time)) {
             TimerState.lastRulesPost = now;
@@ -229,7 +229,7 @@ class TimerManager {
 class CommandHandler {
     constructor(userManager) {
         this.userManager = userManager;
-    }    handleCommand(wsmsg, websocket) {
+    } handleCommand(wsmsg, websocket) {
         const { text, handle } = wsmsg;
         const commands = {
             [COMMANDS.YT]: () => this.handleYouTube(text, websocket),
@@ -246,19 +246,19 @@ class CommandHandler {
                 break;
             }
         }
-    }    handleYouTube(text, websocket) {
+    } handleYouTube(text, websocket) {
         const query = text.slice(COMMANDS.YT.length).trim();
         if (query) {
             messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'youtube', type: 'add', id: query, time: 0 }), true);
         }
-    }handleToke(text, websocket, handle) {
+    } handleToke(text, websocket, handle) {
         const duration = parseInt(text.slice(COMMANDS.TOKE.length).trim());
         if (!isNaN(duration) && duration >= 60 && duration <= 240) {
             this.startTokeCountdown(duration, websocket);
         } else {
             this.sendMessage(websocket, MESSAGES.TOKE_INVALID_DURATION);
         }
-    }    handleCommandsList(websocket) {
+    } handleCommandsList(websocket) {
         const commandsList = [
             `- ${COMMANDS.YT} [query] - Play a YouTube video`,
             `- ${COMMANDS.TOKE} [seconds] - Start a toke countdown (60-240 seconds)`,
@@ -284,7 +284,7 @@ class CommandHandler {
 
     handleRules(websocket) {
         this.sendMessage(websocket, MESSAGES.RULES_IMAGE);
-    }    startTokeCountdown(totalSeconds, websocket) {
+    } startTokeCountdown(totalSeconds, websocket) {
         if (TimerState.tokeCountdownInterval) {
             clearInterval(TimerState.tokeCountdownInterval);
         }
@@ -295,13 +295,13 @@ class CommandHandler {
         // Use absolute timing approach instead of relative timing
         const startTime = Date.now();
         const endTime = startTime + (totalSeconds * 1000);
-        
+
         TimerState.tokeCountdownInterval = setInterval(() => {
             const currentTime = Date.now();
             const elapsedMilliseconds = currentTime - startTime;
             const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
             const secondsRemaining = totalSeconds - elapsedSeconds;
-            
+
             // Ensure we don't send negative counts
             if (secondsRemaining <= 0) {
                 this.sendMessage(websocket, MESSAGES.TOKE_FINAL);
@@ -311,7 +311,7 @@ class CommandHandler {
                 TimerState.lastRulesPost = new Date().getTime();
                 return;
             }
-            
+
             // Only announce at specific intervals
             if (secondsRemaining > 30 && secondsRemaining % 30 === 0) {
                 this.sendMessage(websocket, MESSAGES.TOKE_REMAINING.replace('{seconds}', secondsRemaining));
@@ -320,7 +320,7 @@ class CommandHandler {
             } else if (secondsRemaining <= 10 && secondsRemaining > 0) {
                 this.sendMessage(websocket, `${secondsRemaining}...`);
             }
-            
+
             // If we're near the end time, adjust the interval to ensure we hit exactly 0
             if (secondsRemaining <= 3 && endTime - currentTime > 1000) {
                 clearInterval(TimerState.tokeCountdownInterval);
@@ -333,13 +333,13 @@ class CommandHandler {
                 }, remainingTime);
             }
         }, 1000);
-    }    sendMessage(websocket, text, isPriority = false) {
+    } sendMessage(websocket, text, isPriority = false) {
         messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'msg', text }), isPriority);
     }
 }
 
 // Main initialization
-(function() {
+(function () {
     const userManager = new UserManager();
     const commandHandler = new CommandHandler(userManager);
     window.botWebSocket = null;
@@ -357,7 +357,7 @@ class CommandHandler {
     }, 30000);
 
     WebSocket.prototype._send = WebSocket.prototype.send;
-    WebSocket.prototype.send = function(data) {
+    WebSocket.prototype.send = function (data) {
         this._send(data);
 
         if (!window.botWebSocket) {
@@ -366,7 +366,7 @@ class CommandHandler {
             this.addEventListener('message', handleMessage.bind(this), false);
         }
 
-        this.send = function(data) {
+        this.send = function (data) {
             console.log('send:', data);
             const sendData = safeJSONParse(data);
             if (sendData?.stumble === 'subscribe') {
@@ -383,7 +383,7 @@ class CommandHandler {
 
         if (wsmsg.stumble === 'join' && wsmsg.nick && wsmsg.username && wsmsg.handle) {
             userManager.handleUserJoin(wsmsg, text => commandHandler.sendMessage(this, text));
-        }        if (TimerState.shouldSendMessage) {
+        } if (TimerState.shouldSendMessage) {
             TimerState.shouldSendMessage = false;
             setTimeout(() => messageQueue.addMessage(this, JSON.stringify({ stumble: 'msg', text: MESSAGES.FOUR_TWENTY }), true), 1000);
         }
