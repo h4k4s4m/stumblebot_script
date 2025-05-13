@@ -14,7 +14,8 @@ const COMMANDS = {
     JOIN: '.join',
     COMMANDS: '.commands',
     PING: 'ping',
-    CHEERS: '.cheers'
+    CHEERS: '.cheers',
+    RULES: '.rules'
 };
 const rules_time = 1000 * 60 * 10;
 const MESSAGES = {
@@ -140,7 +141,8 @@ class CommandHandler {
             [COMMANDS.JOIN]: () => this.handleJoin(handle, websocket),
             [COMMANDS.COMMANDS]: () => this.handleCommandsList(websocket),
             [COMMANDS.PING]: () => this.handlePing(websocket),
-            [COMMANDS.CHEERS]: () => this.handleCheers(handle, websocket)
+            [COMMANDS.CHEERS]: () => this.handleCheers(handle, websocket),
+            [COMMANDS.RULES]: () => this.handleRules(websocket)
         };
 
         for (const [command, handler] of Object.entries(commands)) {
@@ -204,6 +206,10 @@ class CommandHandler {
             TimerState.tokeParticipants.add(nickname);
             this.sendMessage(websocket, MESSAGES.TOKE_JOIN.replace('{name}', nickname));
         }
+    }
+
+    handleRules(websocket) {
+        this.sendMessage(websocket, MESSAGES.RULES_IMAGE);
     }
 
     startTokeCountdown(totalSeconds, websocket) {
