@@ -18,6 +18,11 @@ const COMMANDS = {
 };
 const rules_time = 1000 * 60 * 13;
 const suggestion_time = 1000 * 60 * 20;
+// Rate limiting configuration
+const RATE_LIMIT = {
+    MESSAGE_DELAY: 1200, // Milliseconds between messages
+    PRIORITY_DELAY: 500  // Milliseconds between priority messages
+};
 const MESSAGES = {
     FOUR_TWENTY: '🌲 It\'s 4:20 somewhere! Smoke em if you got em! 💨',
     RULES_IMAGE: 'https://i.imgur.com/dSWT06e.png',
@@ -54,6 +59,90 @@ const TimerState = {
     tokeCountdownActive: false,
     tokeCountdownInterval: null
 };
+
+// Message Queue for rate limiting
+class MessageQueue {
+    constructor() {
+        this.queue = [];
+        this.processing = false;
+        this.lastSentTime = 0;
+    }
+
+    // Configure rate limiting settings
+    static configureRateLimit(messageDelay, priorityDelay) {
+        if (typeof messageDelay === 'number' && messageDelay > 0) {
+            RATE_LIMIT.MESSAGE_DELAY = messageDelay;
+            console.log(`Message delay updated to ${messageDelay}ms`);
+        }
+        
+        if (typeof priorityDelay === 'number' && priorityDelay > 0) {
+            RATE_LIMIT.PRIORITY_DELAY = priorityDelay;
+            console.log(`Priority delay updated to ${priorityDelay}ms`);
+        }
+    }
+
+    addMessage(websocket, data, isPriority = false) {
+        const message = {
+            websocket,
+            data,
+            isPriority,
+            timestamp: Date.now()
+        };
+        
+        // Insert priority messages at the front of the queue
+        if (isPriority && this.queue.length > 0) {
+            // Find the last priority message or the start of the queue
+            let insertIndex = 0;
+            for (let i = 0; i < this.queue.length; i++) {
+                if (!this.queue[i].isPriority) {
+                    insertIndex = i;
+                    break;
+                }
+            }
+            this.queue.splice(insertIndex, 0, message);
+        } else {
+            this.queue.push(message);
+        }
+        
+        console.log(`Added message to queue. Queue length: ${this.queue.length}`);
+        
+        if (!this.processing) {
+            this.processQueue();
+        }
+    }
+
+    processQueue() {
+        if (this.queue.length === 0) {
+            this.processing = false;
+            return;
+        }
+
+        this.processing = true;
+        const now = Date.now();
+        const message = this.queue.shift();
+        const timeSinceLastSend = now - this.lastSentTime;
+        const delay = message.isPriority ? 
+            Math.max(0, RATE_LIMIT.PRIORITY_DELAY - timeSinceLastSend) : 
+            Math.max(0, RATE_LIMIT.MESSAGE_DELAY - timeSinceLastSend);
+        
+        setTimeout(() => {
+            try {
+                message.websocket._send(message.data);
+                console.log(`Message sent. Queue remaining: ${this.queue.length}`);
+                this.lastSentTime = Date.now();
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+            
+            // Process next message with a minimum delay
+            setTimeout(() => this.processQueue(), message.isPriority ? 
+                RATE_LIMIT.PRIORITY_DELAY : RATE_LIMIT.MESSAGE_DELAY);
+        }, delay);
+    }
+}
+
+// Global message queue instance
+const messageQueue = new MessageQueue();
 
 // User management
 class UserManager {
@@ -107,29 +196,26 @@ class TimerManager {
             TimerState.lastSentHour = currentHour;
             TimerState.shouldSendMessage = true;
         }
-    }
-
-    static checkRulesTimer(websocket) {
+    }    static checkRulesTimer(websocket) {
         const now = new Date().getTime();
         if (!TimerState.tokeCountdownActive && (now - TimerState.lastRulesPost >= rules_time)) {
             TimerState.lastRulesPost = now;
             if (websocket) {
                 try {
-                    websocket._send(JSON.stringify({ stumble: 'msg', text: MESSAGES.RULES_IMAGE }));
+                    messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'msg', text: MESSAGES.RULES_IMAGE }));
                     console.log('Rules posted successfully');
                 } catch (error) {
                     console.error('Error posting rules:', error);
                 }
             }
         }
-    }    
-    static checkSuggestionsTimer(websocket) {
+    }    static checkSuggestionsTimer(websocket) {
         const now = new Date().getTime();
         if (!TimerState.tokeCountdownActive && (now - TimerState.lastRulesPost >= suggestion_time)) {
             TimerState.lastRulesPost = now;
             if (websocket) {
                 try {
-                    websocket._send(JSON.stringify({ stumble: 'msg', text: 'Got a suggestion? Tell us here! \n' + MESSAGES.SUGGESTIONS_LINK }));
+                    messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'msg', text: 'Got a suggestion? Tell us here! \n' + MESSAGES.SUGGESTIONS_LINK }));
                     console.log('Suggestion link posted successfully');
                 } catch (error) {
                     console.error('Error posting suggestion link:', error);
@@ -160,14 +246,12 @@ class CommandHandler {
                 break;
             }
         }
-    }
-
-    handleYouTube(text, websocket) {
+    }    handleYouTube(text, websocket) {
         const query = text.slice(COMMANDS.YT.length).trim();
         if (query) {
-            websocket._send(JSON.stringify({ stumble: 'youtube', type: 'add', id: query, time: 0 }));
+            messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'youtube', type: 'add', id: query, time: 0 }), true);
         }
-    }    handleToke(text, websocket, handle) {
+    }handleToke(text, websocket, handle) {
         const duration = parseInt(text.slice(COMMANDS.TOKE.length).trim());
         if (!isNaN(duration) && duration >= 60 && duration <= 240) {
             this.startTokeCountdown(duration, websocket);
@@ -179,11 +263,13 @@ class CommandHandler {
             `- ${COMMANDS.YT} [query] - Play a YouTube video`,
             `- ${COMMANDS.TOKE} [seconds] - Start a toke countdown (60-240 seconds)`,
             `- ${COMMANDS.CHEERS} - Share a friendly cheers with the room`,
-            `- ${COMMANDS.COMMANDS} - List all commands`
+            `- ${COMMANDS.COMMANDS} - List all commands`,
+            `- ${COMMANDS.RULES} - Show the room rules`
         ];
 
-        commandsList.forEach((command, index) => {
-            setTimeout(() => this.sendMessage(websocket, command), index * 1000);
+        // Queue all commands with a slight priority so they appear in order
+        commandsList.forEach((command) => {
+            this.sendMessage(websocket, command);
         });
     }
 
@@ -247,10 +333,8 @@ class CommandHandler {
                 }, remainingTime);
             }
         }, 1000);
-    }
-
-    sendMessage(websocket, text) {
-        websocket._send(JSON.stringify({ stumble: 'msg', text }));
+    }    sendMessage(websocket, text, isPriority = false) {
+        messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'msg', text }), isPriority);
     }
 }
 
@@ -299,11 +383,9 @@ class CommandHandler {
 
         if (wsmsg.stumble === 'join' && wsmsg.nick && wsmsg.username && wsmsg.handle) {
             userManager.handleUserJoin(wsmsg, text => commandHandler.sendMessage(this, text));
-        }
-
-        if (TimerState.shouldSendMessage) {
+        }        if (TimerState.shouldSendMessage) {
             TimerState.shouldSendMessage = false;
-            setTimeout(() => this._send(JSON.stringify({ stumble: 'msg', text: MESSAGES.FOUR_TWENTY })), 1000);
+            setTimeout(() => messageQueue.addMessage(this, JSON.stringify({ stumble: 'msg', text: MESSAGES.FOUR_TWENTY }), true), 1000);
         }
 
         commandHandler.handleCommand(wsmsg, this);
