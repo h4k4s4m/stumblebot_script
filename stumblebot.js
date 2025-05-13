@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         StumbleBot
-// @namespace    StumbleBot
-// @version      1.0.2
-// @description  Play youtube videos from the chat box and/or add custom commands to StumbleChat
-// @author       Goji
+// @name         OUIDBot
+// @namespace    OUIDBot
+// @version      1.1
+// @description  Greetings, commands and more
+// @author       Smokemoar (based on work by Goji)
 // @match        https://stumblechat.com/room/*
 // ==/UserScript==
 
@@ -11,22 +11,21 @@
 const COMMANDS = {
     YT: '.yt',
     TOKE: '.toke',
-    JOIN: '.join',
     COMMANDS: '.commands',
     PING: 'ping',
     CHEERS: '.cheers',
     RULES: '.rules'
 };
-const rules_time = 1000 * 60 * 10;
+const rules_time = 1000 * 60 * 13;
+const suggestion_time = 1000 * 60 * 20;
 const MESSAGES = {
     FOUR_TWENTY: '🌲 It\'s 4:20 somewhere! Smoke em if you got em! 💨',
     RULES_IMAGE: 'https://i.imgur.com/dSWT06e.png',
+    SUGGESTIONS_LINK: 'https://forms.gle/phdBT3mEBgJ7wtAJ7',
     TOKE_INVALID_DURATION: 'Please specify a valid duration between 60-240 seconds (e.g., .toke 120)',
     TOKE_START: '🔥 TOKE COUNTDOWN STARTED: {seconds} SECONDS 🔥',
     TOKE_REMAINING: '⏱️ {seconds} seconds remaining until toke time!',
     TOKE_FINAL: '🔥🔥🔥 LETS TOKE  🔥🔥🔥',
-    TOKE_JOIN: '{name} has joined the toke session! 🌿',
-    TOKE_JOIN_ERROR: 'There is no active toke session to join! Start one with .toke [seconds]',
     CHEERS: 'Cheers! Smoke em if you got em! 🍻💨',
     GREETINGS: [
         '🌿 Welcome to the green room, {name}! 💨',
@@ -51,10 +50,9 @@ const TimerState = {
     lastSentDay: -1,
     shouldSendMessage: false,
     lastRulesPost: 0,
+    lastSuggestionPost: 0,
     tokeCountdownActive: false,
-    tokeCountdownInterval: null,
-    tokeParticipants: new Set(),
-    tokeInitiator: null
+    tokeCountdownInterval: null
 };
 
 // User management
@@ -124,6 +122,20 @@ class TimerManager {
                 }
             }
         }
+    }    
+    static checkSuggestionsTimer(websocket) {
+        const now = new Date().getTime();
+        if (!TimerState.tokeCountdownActive && (now - TimerState.lastRulesPost >= suggestion_time)) {
+            TimerState.lastRulesPost = now;
+            if (websocket) {
+                try {
+                    websocket._send(JSON.stringify({ stumble: 'msg', text: 'Got a suggestion? Tell us here! \n' + MESSAGES.SUGGESTIONS_LINK }));
+                    console.log('Suggestion link posted successfully');
+                } catch (error) {
+                    console.error('Error posting suggestion link:', error);
+                }
+            }
+        }
     }
 }
 
@@ -131,14 +143,11 @@ class TimerManager {
 class CommandHandler {
     constructor(userManager) {
         this.userManager = userManager;
-    }
-
-    handleCommand(wsmsg, websocket) {
+    }    handleCommand(wsmsg, websocket) {
         const { text, handle } = wsmsg;
         const commands = {
             [COMMANDS.YT]: () => this.handleYouTube(text, websocket),
             [COMMANDS.TOKE]: () => this.handleToke(text, websocket, handle),
-            [COMMANDS.JOIN]: () => this.handleJoin(handle, websocket),
             [COMMANDS.COMMANDS]: () => this.handleCommandsList(websocket),
             [COMMANDS.PING]: () => this.handlePing(websocket),
             [COMMANDS.CHEERS]: () => this.handleCheers(handle, websocket),
@@ -158,26 +167,17 @@ class CommandHandler {
         if (query) {
             websocket._send(JSON.stringify({ stumble: 'youtube', type: 'add', id: query, time: 0 }));
         }
-    }
-
-    handleToke(text, websocket, handle) {
+    }    handleToke(text, websocket, handle) {
         const duration = parseInt(text.slice(COMMANDS.TOKE.length).trim());
         if (!isNaN(duration) && duration >= 60 && duration <= 240) {
-            const nickname = this.userManager.getNickname(handle);
-            TimerState.tokeInitiator = nickname;
-            TimerState.tokeParticipants.clear();
-            TimerState.tokeParticipants.add(nickname);
             this.startTokeCountdown(duration, websocket);
         } else {
             this.sendMessage(websocket, MESSAGES.TOKE_INVALID_DURATION);
         }
-    }
-
-    handleCommandsList(websocket) {
+    }    handleCommandsList(websocket) {
         const commandsList = [
             `- ${COMMANDS.YT} [query] - Play a YouTube video`,
             `- ${COMMANDS.TOKE} [seconds] - Start a toke countdown (60-240 seconds)`,
-            `- ${COMMANDS.JOIN} - Join an active toke countdown`,
             `- ${COMMANDS.CHEERS} - Share a friendly cheers with the room`,
             `- ${COMMANDS.COMMANDS} - List all commands`
         ];
@@ -196,52 +196,55 @@ class CommandHandler {
         this.sendMessage(websocket, MESSAGES.CHEERS.replace('{name}', nickname));
     }
 
-    handleJoin(handle, websocket) {
-        if (!TimerState.tokeCountdownActive) {
-            this.sendMessage(websocket, MESSAGES.TOKE_JOIN_ERROR);
-            return;
-        }
-        const nickname = this.userManager.getNickname(handle);
-        if (!TimerState.tokeParticipants.has(nickname)) {
-            TimerState.tokeParticipants.add(nickname);
-            this.sendMessage(websocket, MESSAGES.TOKE_JOIN.replace('{name}', nickname));
-        }
-    }
-
     handleRules(websocket) {
         this.sendMessage(websocket, MESSAGES.RULES_IMAGE);
-    }
-
-    startTokeCountdown(totalSeconds, websocket) {
+    }    startTokeCountdown(totalSeconds, websocket) {
         if (TimerState.tokeCountdownInterval) {
             clearInterval(TimerState.tokeCountdownInterval);
         }
 
         TimerState.tokeCountdownActive = true;
-        this.sendMessage(websocket, MESSAGES.TOKE_START
-            .replace('{seconds}', totalSeconds)
-            .replace('{initiator}', TimerState.tokeInitiator));
+        this.sendMessage(websocket, MESSAGES.TOKE_START.replace('{seconds}', totalSeconds));
 
-        let secondsRemaining = totalSeconds;
+        // Use absolute timing approach instead of relative timing
+        const startTime = Date.now();
+        const endTime = startTime + (totalSeconds * 1000);
+        
         TimerState.tokeCountdownInterval = setInterval(() => {
-            secondsRemaining--;
+            const currentTime = Date.now();
+            const elapsedMilliseconds = currentTime - startTime;
+            const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
+            const secondsRemaining = totalSeconds - elapsedSeconds;
             
-            if (secondsRemaining > 30 && secondsRemaining % 30 === 0) {
-                const participants = Array.from(TimerState.tokeParticipants).join(', ');
-                this.sendMessage(websocket, MESSAGES.TOKE_REMAINING
-                    .replace('{seconds}', secondsRemaining)
-                    .replace('{participants}', participants));
-            } else if (secondsRemaining <= 30 && secondsRemaining > 10 && secondsRemaining % 10 === 0) {
-                this.sendMessage(websocket, `⏱️ ${secondsRemaining} seconds remaining!`);
-            } else if (secondsRemaining <= 10 && secondsRemaining > 0) {
-                this.sendMessage(websocket, `${secondsRemaining}...`);
-            } else if (secondsRemaining === 0) {
-                const participants = Array.from(TimerState.tokeParticipants).join(', ');
-                this.sendMessage(websocket, MESSAGES.TOKE_FINAL.replace('{participants}', participants));
+            // Ensure we don't send negative counts
+            if (secondsRemaining <= 0) {
+                this.sendMessage(websocket, MESSAGES.TOKE_FINAL);
                 clearInterval(TimerState.tokeCountdownInterval);
                 TimerState.tokeCountdownInterval = null;
                 TimerState.tokeCountdownActive = false;
                 TimerState.lastRulesPost = new Date().getTime();
+                return;
+            }
+            
+            // Only announce at specific intervals
+            if (secondsRemaining > 30 && secondsRemaining % 30 === 0) {
+                this.sendMessage(websocket, MESSAGES.TOKE_REMAINING.replace('{seconds}', secondsRemaining));
+            } else if (secondsRemaining <= 30 && secondsRemaining > 10 && secondsRemaining % 10 === 0) {
+                this.sendMessage(websocket, `⏱️ ${secondsRemaining} seconds remaining!`);
+            } else if (secondsRemaining <= 10 && secondsRemaining > 0) {
+                this.sendMessage(websocket, `${secondsRemaining}...`);
+            }
+            
+            // If we're near the end time, adjust the interval to ensure we hit exactly 0
+            if (secondsRemaining <= 3 && endTime - currentTime > 1000) {
+                clearInterval(TimerState.tokeCountdownInterval);
+                const remainingTime = endTime - currentTime;
+                setTimeout(() => {
+                    this.sendMessage(websocket, MESSAGES.TOKE_FINAL);
+                    TimerState.tokeCountdownInterval = null;
+                    TimerState.tokeCountdownActive = false;
+                    TimerState.lastRulesPost = new Date().getTime();
+                }, remainingTime);
             }
         }, 1000);
     }
@@ -260,6 +263,7 @@ class CommandHandler {
     setInterval(() => {
         TimerManager.check420Timer();
         TimerManager.checkRulesTimer(window.botWebSocket);
+        TimerManager.checkSuggestionsTimer(window.botWebSocket);
     }, 1000);
 
     setInterval(() => {
