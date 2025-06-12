@@ -196,8 +196,10 @@ class TimerManager {
             TimerState.lastSentHour = currentHour;
             TimerState.shouldSendMessage = true;
         }
-    } static checkRulesTimer(websocket) {
-        const now = new Date().getTime();
+    }
+
+    static checkRulesTimer(websocket) {
+        const now = Date.now();
         if (!TimerState.tokeCountdownActive && (now - TimerState.lastRulesPost >= rules_time)) {
             TimerState.lastRulesPost = now;
             if (websocket) {
@@ -208,8 +210,11 @@ class TimerManager {
                     console.error('Error posting rules:', error);
                 }
             }
-        }    } static checkSuggestionsTimer(websocket) {
-        const now = new Date().getTime();
+        }
+    }
+
+    static checkSuggestionsTimer(websocket) {
+        const now = Date.now();
         if (!TimerState.tokeCountdownActive && (now - TimerState.lastSuggestionPost >= suggestion_time)) {
             TimerState.lastSuggestionPost = now;
             if (websocket) {
@@ -228,13 +233,16 @@ class TimerManager {
 class CommandHandler {
     constructor(userManager) {
         this.userManager = userManager;
-    }    handleCommand(wsmsg, websocket) {
-        const { text, handle } = wsmsg;
-        
+    }
+
+    handleCommand(wsmsg, websocket) {
         // Add validation to prevent errors
-        if (!text || typeof text !== 'string') {
-            return; // Skip processing if text is undefined, null, or not a string
+        if (!wsmsg || !wsmsg.text || typeof wsmsg.text !== 'string') {
+            return;
         }
+
+        const { text, handle } = wsmsg;
+        const lowerText = text.toLowerCase();
         
         const commands = {
             [COMMANDS.YT]: () => this.handleYouTube(text, websocket),
@@ -246,24 +254,30 @@ class CommandHandler {
         };
 
         for (const [command, handler] of Object.entries(commands)) {
-            if (text.indexOf(command) === 0) {
+            if (lowerText.indexOf(command.toLowerCase()) === 0) {
                 handler();
                 break;
             }
         }
-    }handleYouTube(text, websocket) {
+    }
+
+    handleYouTube(text, websocket) {
         const query = text.slice(COMMANDS.YT.length).trim();
         if (query) {
             messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'youtube', type: 'add', id: query, time: 0 }), true);
         }
-    } handleToke(text, websocket, handle) {
+    }
+
+    handleToke(text, websocket, handle) {
         const duration = parseInt(text.slice(COMMANDS.TOKE.length).trim());
         if (!isNaN(duration) && duration >= 60 && duration <= 240) {
             this.startTokeCountdown(duration, websocket);
         } else {
             this.sendMessage(websocket, MESSAGES.TOKE_INVALID_DURATION);
         }
-    } handleCommandsList(websocket) {
+    }
+
+    handleCommandsList(websocket) {
         const commandsList = [
             `- ${COMMANDS.YT} [query] - Play a YouTube video`,
             `- ${COMMANDS.TOKE} [seconds] - Start a toke countdown (60-240 seconds)`,
@@ -289,7 +303,8 @@ class CommandHandler {
 
     handleRules(websocket) {
         this.sendMessage(websocket, MESSAGES.RULES_IMAGE);
-    } 
+    }
+
     startTokeCountdown(totalSeconds, websocket) {
         if (TimerState.tokeCountdownInterval) {
             clearInterval(TimerState.tokeCountdownInterval);
@@ -337,7 +352,9 @@ class CommandHandler {
                 }, remainingTime);
             }
         }, 1000);
-    } sendMessage(websocket, text, isPriority = false) {
+    }
+
+    sendMessage(websocket, text, isPriority = false) {
         messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'msg', text }), isPriority);
     }
 }
@@ -379,14 +396,16 @@ class CommandHandler {
                 this._send(data);
             }
         };
-    };    function handleMessage(msg) {
+    };
+
+    function handleMessage(msg) {
         try {
             const wsmsg = safeJSONParse(msg.data);
             if (!wsmsg) return;
 
             if (wsmsg.stumble === 'join' && wsmsg.nick && wsmsg.username && wsmsg.handle) {
                 userManager.handleUserJoin(wsmsg, text => commandHandler.sendMessage(this, text));
-            } 
+            }
             
             if (TimerState.shouldSendMessage) {
                 TimerState.shouldSendMessage = false;
