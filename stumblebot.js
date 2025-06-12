@@ -208,11 +208,10 @@ class TimerManager {
                     console.error('Error posting rules:', error);
                 }
             }
-        }
-    } static checkSuggestionsTimer(websocket) {
+        }    } static checkSuggestionsTimer(websocket) {
         const now = new Date().getTime();
-        if (!TimerState.tokeCountdownActive && (now - TimerState.lastRulesPost >= suggestion_time)) {
-            TimerState.lastRulesPost = now;
+        if (!TimerState.tokeCountdownActive && (now - TimerState.lastSuggestionPost >= suggestion_time)) {
+            TimerState.lastSuggestionPost = now;
             if (websocket) {
                 try {
                     messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'msg', text: 'Got a suggestion? Tell us here! \n' + MESSAGES.SUGGESTIONS_LINK }));
