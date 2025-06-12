@@ -27,7 +27,7 @@ const MESSAGES = {
     FOUR_TWENTY: '🌲 It\'s 4:20 somewhere! Smoke em if you got em! 💨',
     RULES_IMAGE: 'https://i.imgur.com/dSWT06e.png',
     SUGGESTIONS_LINK: 'https://forms.gle/phdBT3mEBgJ7wtAJ7',
-    TOKE_INVALID_DURATION: 'Please specify a valid duration between 60-240 seconds (e.g., .toke 120)',
+    TOKE_INVALID_DURATION: 'Please specify a valid duration between 10-300 seconds (e.g., .toke 120)',
     TOKE_START: '🔥 TOKE COUNTDOWN STARTED: {seconds} SECONDS 🔥',
     TOKE_REMAINING: '⏱️ {seconds} seconds remaining until toke time!',
     TOKE_FINAL: '🔥🔥🔥 LETS TOKE  🔥🔥🔥',
@@ -175,14 +175,12 @@ class UserManager {
 }
 
 // Timer management
-class TimerManager {
-    static check420Timer() {
-        const now = new Date();
+class TimerManager {    static check420Timer() {
         const { currentHour, currentMinute, currentSecond, currentDay } = {
-            currentHour: now.getHours(),
-            currentMinute: now.getMinutes(),
-            currentSecond: now.getSeconds(),
-            currentDay: now.getDate()
+            currentHour: new Date().getHours(),
+            currentMinute: new Date().getMinutes(),
+            currentSecond: new Date().getSeconds(),
+            currentDay: new Date().getDate()
         };
 
         if (TimerState.lastSentDay !== currentDay) {
@@ -270,7 +268,7 @@ class CommandHandler {
 
     handleToke(text, websocket, handle) {
         const duration = parseInt(text.slice(COMMANDS.TOKE.length).trim());
-        if (!isNaN(duration) && duration >= 60 && duration <= 240) {
+        if (!isNaN(duration) && duration >= 10 && duration <= 300) {
             this.startTokeCountdown(duration, websocket);
         } else {
             this.sendMessage(websocket, MESSAGES.TOKE_INVALID_DURATION);
@@ -280,7 +278,7 @@ class CommandHandler {
     handleCommandsList(websocket) {
         const commandsList = [
             `- ${COMMANDS.YT} [query] - Play a YouTube video`,
-            `- ${COMMANDS.TOKE} [seconds] - Start a toke countdown (60-240 seconds)`,
+            `- ${COMMANDS.TOKE} [seconds] - Start a toke countdown (10-300 seconds)`,
             `- ${COMMANDS.CHEERS} - Share a friendly cheers with the room`,
             `- ${COMMANDS.COMMANDS} - List all commands`,
             `- ${COMMANDS.RULES} - Show the room rules`
