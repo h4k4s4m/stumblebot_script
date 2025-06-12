@@ -228,8 +228,14 @@ class TimerManager {
 class CommandHandler {
     constructor(userManager) {
         this.userManager = userManager;
-    } handleCommand(wsmsg, websocket) {
+    }    handleCommand(wsmsg, websocket) {
         const { text, handle } = wsmsg;
+        
+        // Add validation to prevent errors
+        if (!text || typeof text !== 'string') {
+            return; // Skip processing if text is undefined, null, or not a string
+        }
+        
         const commands = {
             [COMMANDS.YT]: () => this.handleYouTube(text, websocket),
             [COMMANDS.TOKE]: () => this.handleToke(text, websocket, handle),
@@ -245,7 +251,7 @@ class CommandHandler {
                 break;
             }
         }
-    } handleYouTube(text, websocket) {
+    }handleYouTube(text, websocket) {
         const query = text.slice(COMMANDS.YT.length).trim();
         if (query) {
             messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'youtube', type: 'add', id: query, time: 0 }), true);
@@ -373,20 +379,24 @@ class CommandHandler {
                 this._send(data);
             }
         };
-    };
+    };    function handleMessage(msg) {
+        try {
+            const wsmsg = safeJSONParse(msg.data);
+            if (!wsmsg) return;
 
-    function handleMessage(msg) {
-        const wsmsg = safeJSONParse(msg.data);
-        if (!wsmsg) return;
+            if (wsmsg.stumble === 'join' && wsmsg.nick && wsmsg.username && wsmsg.handle) {
+                userManager.handleUserJoin(wsmsg, text => commandHandler.sendMessage(this, text));
+            } 
+            
+            if (TimerState.shouldSendMessage) {
+                TimerState.shouldSendMessage = false;
+                setTimeout(() => messageQueue.addMessage(this, JSON.stringify({ stumble: 'msg', text: MESSAGES.FOUR_TWENTY }), true), 1000);
+            }
 
-        if (wsmsg.stumble === 'join' && wsmsg.nick && wsmsg.username && wsmsg.handle) {
-            userManager.handleUserJoin(wsmsg, text => commandHandler.sendMessage(this, text));
-        } if (TimerState.shouldSendMessage) {
-            TimerState.shouldSendMessage = false;
-            setTimeout(() => messageQueue.addMessage(this, JSON.stringify({ stumble: 'msg', text: MESSAGES.FOUR_TWENTY }), true), 1000);
+            commandHandler.handleCommand(wsmsg, this);
+        } catch (error) {
+            console.error('Error in handleMessage:', error);
         }
-
-        commandHandler.handleCommand(wsmsg, this);
     }
 
     function safeJSONParse(jsonString) {
