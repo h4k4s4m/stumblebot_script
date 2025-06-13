@@ -25,7 +25,7 @@ const RATE_LIMIT = {
 };
 const MESSAGES = {
     FOUR_TWENTY: '🌲 It\'s 4:20 somewhere! Smoke em if you got em! 💨',
-    RULES_IMAGE: 'https://i.imgur.com/dSWT06e.png',
+    RULES_IMAGE: 'https://i.imgur.com/4h8TMEg.jpeg',
     SUGGESTIONS_LINK: 'https://forms.gle/phdBT3mEBgJ7wtAJ7',
     TOKE_INVALID_DURATION: 'Please specify a valid duration between 10-300 seconds (e.g., .toke 120)',
     TOKE_START: '🔥 TOKE COUNTDOWN STARTED: {seconds} SECONDS 🔥',
