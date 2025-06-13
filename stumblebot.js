@@ -369,11 +369,11 @@ class CommandHandler {
         TimerManager.checkSuggestionsTimer(window.botWebSocket);
     }, 1000);
 
-    setInterval(() => {
-        if (!window.botWebSocket) {
-            console.log('WebSocket reference is null, waiting for connection...');
-        }
-    }, 30000);
+    // setInterval(() => {
+    //     if (!window.botWebSocket) {
+    //         console.log('WebSocket reference is null, waiting for connection...');
+    //     }
+    // }, 30000);
 
     WebSocket.prototype._send = WebSocket.prototype.send;
     WebSocket.prototype.send = function (data) {
