@@ -53,11 +53,11 @@ const MESSAGES = {
     PONG: 'PONG',
     LOL: ['https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
     ANNOUNCEMENTS: [
-        '💖 Help keep the good vibes going! Support our chat and Discord for awesome bot upgrades, Nitro goodies, Hyperbeam movie nights, and more fun stuff! \nhttps://ko-fi.com/croin💚',
-        '🌿 Welcome to our chill community! Don\'t forget to check out our Discord for even more fun activities and events! \nhttps://ouidchat.com!💨',
-        '🎬 Movie night Fridays, gaming sessions, and more! Join our Discord community for exclusive events and good vibes! 🍿 \nVote Here: https://ko-fi.com/polls/What-genre-of-movie-do-you-wanna-watch-B0B31H3OGU \nhttps://ouidchat.com!💨',
-        '🔥 Having fun? Consider supporting us to help keep the bot running and add cool new features! Every bit helps! \nhttps://ko-fi.com/croin💚',
-        '📱 Follow us for updates and join our growing community of chill people who love to hang out and have fun! 🌟 \nhttps://ouidchat.com!💨'
+        '💖 Help keep the good vibes going! Support our chat and Discord for awesome bot upgrades, Nitro goodies, Hyperbeam movie nights, and more fun stuff! \n💨https://ko-fi.com/croin💚',
+        '🌿 Welcome to our chill community! Don\'t forget to check out our Discord for even more fun activities and events! \n💨https://ouidchat.com!💨',
+        '🎬 Movie night SATURDAYS, gaming sessions, and more! Join our Discord community for exclusive events and good vibes! 🍿 \nVote Here: https://ko-fi.com/polls/What-genre-of-movie-do-you-wanna-watch-B0B31H3OGU \n\n💨https://ouidchat.com!💨',
+        '🔥 Having fun? Consider supporting us to help keep the bot running and add cool new features! Every bit helps! \n💨https://ko-fi.com/croin💚',
+        '📱 Follow us for updates and join our growing community of chill people who love to hang out and have fun! 🌟 \n💨https://ouidchat.com!💨'
     ]
 
 };
