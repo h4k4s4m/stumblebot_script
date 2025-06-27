@@ -16,10 +16,10 @@ const COMMANDS = {
     CHEERS: '.cheers',
     RULES: '.rules',
     COUGH: '.cough',
-    LOL: 'lol'
+    LOL: '.lol'
 };
 const rules_time = 1000 * 60 * 13;
-const suggestion_time = 1000 * 60 * 20;
+const suggestion_time = 1000 * 60 * 10;
 // Rate limiting configuration
 const RATE_LIMIT = {
     MESSAGE_DELAY: 1200, // Milliseconds between messages
@@ -51,7 +51,14 @@ const MESSAGES = {
     WELCOME: 'Welcome, {name}!',
     WELCOME_BACK: 'Welcome back, {name}!',
     PONG: 'PONG',
-    LOL: ['https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif']
+    LOL: ['https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
+    ANNOUNCEMENTS: [
+        '💖 Help keep the good vibes going! Support our chat and Discord for awesome bot upgrades, Nitro goodies, Hyperbeam movie nights, and more fun stuff! \nhttps://ko-fi.com/croin💚',
+        '🌿 Welcome to our chill community! Don\'t forget to check out our Discord for even more fun activities and events! \nhttps://ouidchat.com!💨',
+        '🎬 Movie night Fridays, gaming sessions, and more! Join our Discord community for exclusive events and good vibes! 🍿 \nVote Here: https://ko-fi.com/polls/What-genre-of-movie-do-you-wanna-watch-B0B31H3OGU \nhttps://ouidchat.com!💨',
+        '🔥 Having fun? Consider supporting us to help keep the bot running and add cool new features! Every bit helps! \nhttps://ko-fi.com/croin💚',
+        '📱 Follow us for updates and join our growing community of chill people who love to hang out and have fun! 🌟 \nhttps://ouidchat.com!💨'
+    ]
 
 };
 
@@ -63,7 +70,8 @@ const TimerState = {
     lastRulesPost: 0,
     lastSuggestionPost: 0,
     tokeCountdownActive: false,
-    tokeCountdownInterval: null
+    tokeCountdownInterval: null,
+    currentAnnouncementIndex: 0
 };
 
 // Message Queue for rate limiting
@@ -224,10 +232,15 @@ class TimerManager {
             TimerState.lastSuggestionPost = now;
             if (websocket) {
                 try {
-                    messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'msg', text: '💖 Help keep the good vibes going! Support our chat and Discord for awesome bot upgrades, Nitro goodies, Hyperbeam movie nights, and more fun stuff! \n' + MESSAGES.SUGGESTIONS_LINK }));
-                    console.log('Suggestion link posted successfully');
+                    // Get the current announcement from the rotation
+                    const announcement = MESSAGES.ANNOUNCEMENTS[TimerState.currentAnnouncementIndex];
+                    messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'msg', text: announcement }));
+                    console.log(`Announcement ${TimerState.currentAnnouncementIndex + 1} posted successfully`);
+
+                    // Move to next announcement (cycle back to 0 when we reach the end)
+                    TimerState.currentAnnouncementIndex = (TimerState.currentAnnouncementIndex + 1) % MESSAGES.ANNOUNCEMENTS.length;
                 } catch (error) {
-                    console.error('Error posting suggestion link:', error);
+                    console.error('Error posting announcement:', error);
                 }
             }
         }
