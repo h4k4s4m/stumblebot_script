@@ -14,7 +14,9 @@ const COMMANDS = {
     COMMANDS: '.commands',
     PING: 'ping',
     CHEERS: '.cheers',
-    RULES: '.rules'
+    RULES: '.rules',
+    COUGH: '.cough',
+    lol: 'lol'
 };
 const rules_time = 1000 * 60 * 13;
 const suggestion_time = 1000 * 60 * 20;
@@ -26,11 +28,13 @@ const RATE_LIMIT = {
 const MESSAGES = {
     FOUR_TWENTY: '🌲 It\'s 4:20 somewhere! Smoke em if you got em! 💨',
     RULES_IMAGE: 'https://i.imgur.com/4h8TMEg.jpeg',
-    SUGGESTIONS_LINK: 'https://forms.gle/phdBT3mEBgJ7wtAJ7',
+    SUGGESTIONS_LINK: 'https://ko-fi.com/croin',
     TOKE_INVALID_DURATION: 'Please specify a valid duration between 10-300 seconds (e.g., .toke 120)',
     TOKE_START: '🔥 TOKE COUNTDOWN STARTED: {seconds} SECONDS 🔥',
     TOKE_REMAINING: '⏱️ {seconds} seconds remaining until toke time!',
     TOKE_FINAL: '🔥🔥🔥 LETS TOKE  🔥🔥🔥',
+    COUGH: 'https://i.imgur.com/bYVHwA9.gif',
+    COUGH2: 'https://i.imgur.com/eBHI4ob.gif',
     CHEERS: 'Cheers! Smoke em if you got em! 🍻💨',
     GREETINGS: [
         '🌿 Welcome to the green room, {name}! 💨',
@@ -46,7 +50,9 @@ const MESSAGES = {
     ],
     WELCOME: 'Welcome, {name}!',
     WELCOME_BACK: 'Welcome back, {name}!',
-    PONG: 'PONG'
+    PONG: 'PONG',
+    LOL: ['https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif']
+
 };
 
 // Timer state
@@ -175,7 +181,8 @@ class UserManager {
 }
 
 // Timer management
-class TimerManager {    static check420Timer() {
+class TimerManager {
+    static check420Timer() {
         const { currentHour, currentMinute, currentSecond, currentDay } = {
             currentHour: new Date().getHours(),
             currentMinute: new Date().getMinutes(),
@@ -217,7 +224,7 @@ class TimerManager {    static check420Timer() {
             TimerState.lastSuggestionPost = now;
             if (websocket) {
                 try {
-                    messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'msg', text: 'Got a suggestion? Tell us here! \n' + MESSAGES.SUGGESTIONS_LINK }));
+                    messageQueue.addMessage(websocket, JSON.stringify({ stumble: 'msg', text: '💖 Help keep the good vibes going! Support our chat and Discord for awesome bot upgrades, Nitro goodies, Hyperbeam movie nights, and more fun stuff! \n' + MESSAGES.SUGGESTIONS_LINK }));
                     console.log('Suggestion link posted successfully');
                 } catch (error) {
                     console.error('Error posting suggestion link:', error);
@@ -241,14 +248,16 @@ class CommandHandler {
 
         const { text, handle } = wsmsg;
         const lowerText = text.toLowerCase();
-        
+
         const commands = {
             [COMMANDS.YT]: () => this.handleYouTube(text, websocket),
             [COMMANDS.TOKE]: () => this.handleToke(text, websocket, handle),
             [COMMANDS.COMMANDS]: () => this.handleCommandsList(websocket),
             [COMMANDS.PING]: () => this.handlePing(websocket),
             [COMMANDS.CHEERS]: () => this.handleCheers(handle, websocket),
-            [COMMANDS.RULES]: () => this.handleRules(websocket)
+            [COMMANDS.RULES]: () => this.handleRules(websocket),
+            [COMMANDS.LOL]: () => this.handleLol(websocket),
+            [COMMANDS.COUGH]: () => this.handleCough(websocket)
         };
 
         for (const [command, handler] of Object.entries(commands)) {
@@ -294,6 +303,17 @@ class CommandHandler {
         setTimeout(() => this.sendMessage(websocket, MESSAGES.PONG), 1000);
     }
 
+    handleLol(websocket) {
+        const LOLindex = Math.floor(Math.random() * MESSAGES.LOL.length);
+        const message = MESSAGES.LOL[LOLindex];
+        setTimeout(() => this.sendMessage(websocket, message), 1000);
+    }
+
+    handleCough(websocket) {
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH), 1000);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 1300);
+    }
+
     handleCheers(handle, websocket) {
         const nickname = this.userManager.getNickname(handle);
         this.sendMessage(websocket, MESSAGES.CHEERS.replace('{name}', nickname));
@@ -336,7 +356,7 @@ class CommandHandler {
                 this.sendMessage(websocket, MESSAGES.TOKE_REMAINING.replace('{seconds}', secondsRemaining));
             } else if (secondsRemaining <= 30 && secondsRemaining > 10 && secondsRemaining % 10 === 0) {
                 this.sendMessage(websocket, `⏱️ ${secondsRemaining} seconds remaining!`);
-            } 
+            }
 
             // If we're near the end time, adjust the interval to ensure we hit exactly 0
             if (secondsRemaining <= 3 && endTime - currentTime > 1000) {
@@ -344,6 +364,8 @@ class CommandHandler {
                 const remainingTime = endTime - currentTime;
                 setTimeout(() => {
                     this.sendMessage(websocket, MESSAGES.TOKE_FINAL);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH), 1000);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 1300);
                     TimerState.tokeCountdownInterval = null;
                     TimerState.tokeCountdownActive = false;
                     TimerState.lastRulesPost = new Date().getTime();
@@ -404,7 +426,7 @@ class CommandHandler {
             if (wsmsg.stumble === 'join' && wsmsg.nick && wsmsg.username && wsmsg.handle) {
                 userManager.handleUserJoin(wsmsg, text => commandHandler.sendMessage(this, text));
             }
-            
+
             if (TimerState.shouldSendMessage) {
                 TimerState.shouldSendMessage = false;
                 setTimeout(() => messageQueue.addMessage(this, JSON.stringify({ stumble: 'msg', text: MESSAGES.FOUR_TWENTY }), true), 1000);
