@@ -16,7 +16,7 @@ const COMMANDS = {
     CHEERS: '.cheers',
     RULES: '.rules',
     COUGH: '.cough',
-    lol: 'lol'
+    LOL: 'lol'
 };
 const rules_time = 1000 * 60 * 13;
 const suggestion_time = 1000 * 60 * 20;
@@ -261,7 +261,13 @@ class CommandHandler {
         };
 
         for (const [command, handler] of Object.entries(commands)) {
-            if (lowerText.indexOf(command.toLowerCase()) === 0) {
+            if (command === COMMANDS.LOL) {
+                // Special handling for LOL - match exact word
+                if (lowerText === command.toLowerCase()) {
+                    handler();
+                    break;
+                }
+            } else if (lowerText.indexOf(command.toLowerCase()) === 0) {
                 handler();
                 break;
             }
