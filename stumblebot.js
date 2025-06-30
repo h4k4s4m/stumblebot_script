@@ -12,11 +12,9 @@ const COMMANDS = {
     YT: '.yt',
     TOKE: '.toke',
     COMMANDS: '.commands',
-    PING: 'ping',
     CHEERS: '.cheers',
     RULES: '.rules',
-    COUGH: '.cough',
-    LOL: '.lol'
+    COUGH: '.cough'
 };
 const rules_time = 1000 * 60 * 13;
 const suggestion_time = 1000 * 60 * 10;
@@ -35,6 +33,8 @@ const MESSAGES = {
     TOKE_FINAL: '🔥🔥🔥 LETS TOKE  🔥🔥🔥',
     COUGH: 'https://i.imgur.com/bYVHwA9.gif',
     COUGH2: 'https://i.imgur.com/eBHI4ob.gif',
+    COUGH3: 'https://i.imgur.com/gjExKHz.gif',
+    COUGH4: 'https://i.imgur.com/mlbleHP.gif',
     CHEERS: 'Cheers! Smoke em if you got em! 🍻💨',
     GREETINGS: [
         '🌿 Welcome to the green room, {name}! 💨',
@@ -50,17 +50,47 @@ const MESSAGES = {
     ],
     WELCOME: 'Welcome, {name}!',
     WELCOME_BACK: 'Welcome back, {name}!',
+    DOT_WELCOME: "https://i.imgur.com/1EKKO9F.gif",
     PONG: 'PONG',
     LOL: ['https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
     ANNOUNCEMENTS: [
         '💖 Help keep the good vibes going! Support our chat and Discord for awesome bot upgrades, Nitro goodies, Hyperbeam movie nights, and more fun stuff! \n💨https://ko-fi.com/croin💚',
         '🌿 Welcome to our chill community! Don\'t forget to check out our Discord for even more fun activities and events! \n💨https://ouidchat.com!💨',
-        '🎬 Movie night SATURDAYS, gaming sessions, and more! Join our Discord community for exclusive events and good vibes! 🍿 \nVote Here: https://ko-fi.com/polls/What-genre-of-movie-do-you-wanna-watch-B0B31H3OGU \n\n💨https://ouidchat.com!💨',
+        '🎬 Movie night SATURDAYS, gaming sessions, and more! Join our Discord community for exclusive events and good vibes! 🍿 \nhttps://hyperbeam.com/i/qTCk_VYj \n\n💨https://ouidchat.com!💨',
         '🔥 Having fun? Consider supporting us to help keep the bot running and add cool new features! Every bit helps! \n💨https://ko-fi.com/croin💚',
         '📱 Follow us for updates and join our growing community of chill people who love to hang out and have fun! 🌟 \n💨https://ouidchat.com!💨'
     ]
 
 };
+
+// Simple Commands - Easy to add new trigger/response pairs
+const SIMPLE_COMMANDS = [
+    {
+        trigger: 'lol',
+        responses: ['https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
+        exactMatch: true,
+        delay: 1000
+    },
+    {
+        trigger: 'ping',
+        responses: ['PONG'],
+        exactMatch: false,
+        delay: 1000
+    },
+    {
+        trigger: '.welcome',
+        responses: ['https://i.imgur.com/1EKKO9F.gif'],
+        exactMatch: false,
+        delay: 500
+    }
+    // Add more simple commands here! Format:
+    // {
+    //     trigger: 'your_trigger',           // The text that triggers the response
+    //     responses: ['response1', 'response2'], // Array of possible responses (random selection)
+    //     exactMatch: true/false,            // true = exact match only, false = starts with trigger
+    //     delay: 1000                        // Delay in milliseconds before responding
+    // }
+];
 
 // Timer state
 const TimerState = {
@@ -262,25 +292,32 @@ class CommandHandler {
         const { text, handle } = wsmsg;
         const lowerText = text.toLowerCase();
 
+        // Check simple commands first
+        const simpleCommand = SIMPLE_COMMANDS.find(cmd => {
+            if (cmd.exactMatch) {
+                return lowerText === cmd.trigger.toLowerCase();
+            } else {
+                return lowerText.indexOf(cmd.trigger.toLowerCase()) === 0;
+            }
+        });
+
+        if (simpleCommand) {
+            this.handleSimpleCommand(simpleCommand, websocket);
+            return;
+        }
+
+        // Handle complex commands
         const commands = {
             [COMMANDS.YT]: () => this.handleYouTube(text, websocket),
             [COMMANDS.TOKE]: () => this.handleToke(text, websocket, handle),
             [COMMANDS.COMMANDS]: () => this.handleCommandsList(websocket),
-            [COMMANDS.PING]: () => this.handlePing(websocket),
             [COMMANDS.CHEERS]: () => this.handleCheers(handle, websocket),
             [COMMANDS.RULES]: () => this.handleRules(websocket),
-            [COMMANDS.LOL]: () => this.handleLol(websocket),
             [COMMANDS.COUGH]: () => this.handleCough(websocket)
         };
 
         for (const [command, handler] of Object.entries(commands)) {
-            if (command === COMMANDS.LOL) {
-                // Special handling for LOL - match exact word
-                if (lowerText === command.toLowerCase()) {
-                    handler();
-                    break;
-                }
-            } else if (lowerText.indexOf(command.toLowerCase()) === 0) {
+            if (lowerText.indexOf(command.toLowerCase()) === 0) {
                 handler();
                 break;
             }
@@ -318,19 +355,19 @@ class CommandHandler {
         });
     }
 
-    handlePing(websocket) {
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.PONG), 1000);
-    }
-
-    handleLol(websocket) {
-        const LOLindex = Math.floor(Math.random() * MESSAGES.LOL.length);
-        const message = MESSAGES.LOL[LOLindex];
-        setTimeout(() => this.sendMessage(websocket, message), 1000);
+    handleSimpleCommand(command, websocket) {
+        const response = Array.isArray(command.responses) ? 
+            command.responses[Math.floor(Math.random() * command.responses.length)] : 
+            command.responses;
+        
+        setTimeout(() => this.sendMessage(websocket, response), command.delay || 1000);
     }
 
     handleCough(websocket) {
         setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH), 1000);
         setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 1300);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH3), 1600);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH4), 1900);
     }
 
     handleCheers(handle, websocket) {
