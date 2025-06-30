@@ -66,7 +66,7 @@ const MESSAGES = {
 // Simple Commands - Easy to add new trigger/response pairs
 const SIMPLE_COMMANDS = [
     {
-        trigger: 'lol',
+        trigger: '.lol',
         responses: ['https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
         exactMatch: true,
         delay: 1000
@@ -80,6 +80,12 @@ const SIMPLE_COMMANDS = [
     {
         trigger: '.welcome',
         responses: ['https://i.imgur.com/1EKKO9F.gif'],
+        exactMatch: false,
+        delay: 500
+    },
+    {
+        trigger: '.warning',
+        responses: ['https://i.imgur.com/zfVJFh1.gif'],
         exactMatch: false,
         delay: 500
     }
@@ -356,10 +362,10 @@ class CommandHandler {
     }
 
     handleSimpleCommand(command, websocket) {
-        const response = Array.isArray(command.responses) ? 
-            command.responses[Math.floor(Math.random() * command.responses.length)] : 
+        const response = Array.isArray(command.responses) ?
+            command.responses[Math.floor(Math.random() * command.responses.length)] :
             command.responses;
-        
+
         setTimeout(() => this.sendMessage(websocket, response), command.delay || 1000);
     }
 
