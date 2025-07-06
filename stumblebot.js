@@ -35,6 +35,8 @@ const MESSAGES = {
     COUGH2: 'https://i.imgur.com/eBHI4ob.gif',
     COUGH3: 'https://i.imgur.com/gjExKHz.gif',
     COUGH4: 'https://i.imgur.com/mlbleHP.gif',
+    COUGH5: 'https://i.imgur.com/h06ShYy.gif',
+    COUGH6: 'https://i.imgur.com/i9CaCvX.gif',
     CHEERS: 'Cheers! Smoke em if you got em! 🍻💨',
     GREETINGS: [
         '🌿 Welcome to the green room, {name}! 💨',
@@ -54,11 +56,11 @@ const MESSAGES = {
     PONG: 'PONG',
     LOL: ['https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
     ANNOUNCEMENTS: [
-        '💖 Help keep the good vibes going! Support our chat and Discord for awesome bot upgrades, Nitro goodies, Hyperbeam movie nights, and more fun stuff! \n💨https://ko-fi.com/croin💚',
-        '🌿 Welcome to our chill community! Don\'t forget to check out our Discord for even more fun activities and events! \n💨https://ouidchat.com!💨',
-        '🎬 Movie night SATURDAYS, gaming sessions, and more! Join our Discord community for exclusive events and good vibes! 🍿 \nhttps://hyperbeam.com/i/qTCk_VYj \n\n💨https://ouidchat.com!💨',
-        '🔥 Having fun? Consider supporting us to help keep the bot running and add cool new features! Every bit helps! \n💨https://ko-fi.com/croin💚',
-        '📱 Follow us for updates and join our growing community of chill people who love to hang out and have fun! 🌟 \n💨https://ouidchat.com!💨'
+        '💖 Help keep the good vibes going! Support our chat and Discord for awesome bot upgrades, Nitro goodies, Hyperbeam movie nights, and more fun stuff! 🌟\n💨https://ko-fi.com/croin💚',
+        '🌿 Welcome to our chill community! Don\'t forget to check out our Discord for even more fun activities and events! 🌟\n💨https://ouidchat.com!💨',
+        '🎬 Movie night SATURDAYS, gaming sessions, and more! Join our Discord community for exclusive events and good vibes! 🍿\n💨https://ouidchat.com!💨',
+        '🔥 Having fun? Consider supporting us to help keep the bot running and add cool new features! Every bit helps! 🌟\n💨https://ko-fi.com/croin💚',
+        '📱 Follow us for updates and join our growing community of chill people who love to hang out and have fun! 🌟\n💨https://ouidchat.com!💨'
     ]
 
 };
@@ -374,6 +376,8 @@ class CommandHandler {
         setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 1300);
         setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH3), 1600);
         setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH4), 1900);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH5), 2200);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH6), 2500);
     }
 
     handleCheers(handle, websocket) {
@@ -428,6 +432,10 @@ class CommandHandler {
                     this.sendMessage(websocket, MESSAGES.TOKE_FINAL);
                     setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH), 1000);
                     setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 1300);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH3), 1600);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH4), 1900);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH5), 2200);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH6), 2500);
                     TimerState.tokeCountdownInterval = null;
                     TimerState.tokeCountdownActive = false;
                     TimerState.lastRulesPost = new Date().getTime();
