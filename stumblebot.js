@@ -93,7 +93,7 @@ const SIMPLE_COMMANDS = [
     },
     {
         trigger: '.welcome',
-        responses: ['https://i.imgur.com/1EKKO9F.gif'],
+        responses: ['https://i.imgur.com/1EKKO9F.gif', 'https://i.imgur.com/2rN7SAp.gif', 'https://i.imgur.com/i35cIUb.gif', 'https://i.imgur.com/Jw1MNWu.gif', 'https://i.imgur.com/TeWCGJ7.gif'],
         exactMatch: false,
         delay: 500
     },
