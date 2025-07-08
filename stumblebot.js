@@ -10,8 +10,8 @@
 // Constants
 const COMMANDS = {
     YT: '.yt',
-    TOKE: '.toke',
-    COMMANDS: '.commands',
+    TOKE: ['.toke', '.tokes', '.t'],
+    COMMANDS: ['.commands', '.help'],
     CHEERS: '.cheers',
     RULES: '.rules',
     COUGH: '.cough'
@@ -69,7 +69,13 @@ const MESSAGES = {
 const SIMPLE_COMMANDS = [
     {
         trigger: '.lol',
-        responses: ['https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
+        responses: ['https://i.imgur.com/hUxrTr5.gif', 'https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
+        exactMatch: true,
+        delay: 1000
+    },
+    {
+        trigger: '.awkward',
+        responses: ['https://i.imgur.com/tMdFwsj.gif', 'https://i.imgur.com/3LvlcuK.gif', 'https://i.imgur.com/YL653SL.gif', 'https://i.imgur.com/yq09vPQ.gif', 'https://i.imgur.com/PU1ZEy5.gif', 'https://i.imgur.com/r4guIoh.gif', 'https://i.imgur.com/URccR9g.gif'],
         exactMatch: true,
         delay: 1000
     },
@@ -305,7 +311,8 @@ class CommandHandler {
             if (cmd.exactMatch) {
                 return lowerText === cmd.trigger.toLowerCase();
             } else {
-                return lowerText.indexOf(cmd.trigger.toLowerCase()) === 0;
+                const triggerLower = cmd.trigger.toLowerCase();
+                return lowerText === triggerLower || lowerText.startsWith(triggerLower + ' ');
             }
         });
 
@@ -315,18 +322,28 @@ class CommandHandler {
         }
 
         // Handle complex commands
-        const commands = {
-            [COMMANDS.YT]: () => this.handleYouTube(text, websocket),
-            [COMMANDS.TOKE]: () => this.handleToke(text, websocket, handle),
-            [COMMANDS.COMMANDS]: () => this.handleCommandsList(websocket),
-            [COMMANDS.CHEERS]: () => this.handleCheers(handle, websocket),
-            [COMMANDS.RULES]: () => this.handleRules(websocket),
-            [COMMANDS.COUGH]: () => this.handleCough(websocket)
-        };
+        const commandMap = [
+            { triggers: [COMMANDS.YT], handler: () => this.handleYouTube(text, websocket) },
+            { triggers: COMMANDS.TOKE, handler: () => this.handleToke(text, websocket, handle, lowerText) },
+            { triggers: COMMANDS.COMMANDS, handler: () => this.handleCommandsList(websocket) },
+            { triggers: [COMMANDS.CHEERS], handler: () => this.handleCheers(handle, websocket) },
+            { triggers: [COMMANDS.RULES], handler: () => this.handleRules(websocket) },
+            { triggers: [COMMANDS.COUGH], handler: () => this.handleCough(websocket) }
+        ];
 
-        for (const [command, handler] of Object.entries(commands)) {
-            if (lowerText.indexOf(command.toLowerCase()) === 0) {
-                handler();
+        for (const command of commandMap) {
+            let matched = false;
+
+            for (const trigger of command.triggers) {
+                const triggerLower = trigger.toLowerCase();
+                if (lowerText === triggerLower || lowerText.startsWith(triggerLower + ' ')) {
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (matched) {
+                command.handler();
                 break;
             }
         }
@@ -339,8 +356,18 @@ class CommandHandler {
         }
     }
 
-    handleToke(text, websocket, handle) {
-        const duration = parseInt(text.slice(COMMANDS.TOKE.length).trim());
+    handleToke(text, websocket, handle, lowerText) {
+        // Find which trigger was used
+        let usedTrigger = '';
+        for (const trigger of COMMANDS.TOKE) {
+            const triggerLower = trigger.toLowerCase();
+            if (lowerText === triggerLower || lowerText.startsWith(triggerLower + ' ')) {
+                usedTrigger = trigger;
+                break;
+            }
+        }
+
+        const duration = parseInt(text.slice(usedTrigger.length).trim());
         if (!isNaN(duration) && duration >= 10 && duration <= 300) {
             this.startTokeCountdown(duration, websocket);
         } else {
@@ -351,10 +378,15 @@ class CommandHandler {
     handleCommandsList(websocket) {
         const commandsList = [
             `- ${COMMANDS.YT} [query] - Play a YouTube video`,
-            `- ${COMMANDS.TOKE} [seconds] - Start a toke countdown (10-300 seconds)`,
+            `- ${COMMANDS.TOKE.join('/')} [seconds] - Start a toke countdown (10-300 seconds)`,
             `- ${COMMANDS.CHEERS} - Share a friendly cheers with the room`,
-            `- ${COMMANDS.COMMANDS} - List all commands`,
-            `- ${COMMANDS.RULES} - Show the room rules`
+            `- ${COMMANDS.RULES} - Show the room rules`,
+            `- ${COMMANDS.COUGH} - Send a coughing sequence`,
+            `- ${COMMANDS.COMMANDS.join('/')} - List all commands`,
+            `- .lol - Send a random funny GIF`,
+            `- .welcome - Send a welcome GIF`,
+            `- .warning - Send a warning GIF`,
+            `- ping - Responds with PONG`
         ];
 
         // Queue all commands with a slight priority so they appear in order
