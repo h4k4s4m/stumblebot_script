@@ -80,6 +80,12 @@ const SIMPLE_COMMANDS = [
         delay: 1000
     },
     {
+        trigger: '.dance',
+        responses: ['https://i.imgur.com/LqqNkMr.gif', 'https://i.imgur.com/S67B5Qg.gif', 'https://i.imgur.com/RFXZRIe.gif', 'https://i.imgur.com/yFEHuu6.gif', 'https://i.imgur.com/N6XZZGI.gif', 'https://i.imgur.com/ghSQMF9.gif'],
+        exactMatch: true,
+        delay: 1000
+    },
+    {
         trigger: 'ping',
         responses: ['PONG'],
         exactMatch: false,
