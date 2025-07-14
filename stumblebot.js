@@ -69,7 +69,7 @@ const MESSAGES = {
 const SIMPLE_COMMANDS = [
     {
         trigger: '.lol',
-        responses: ['https://i.imgur.com/5llADh7.gif', 'https://i.imgur.com/hUxrTr5.gif', 'https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
+        responses: ['https://i.imgur.com/nOKn7EQ.gif', 'https://i.imgur.com/WUnfz9y.gif', 'https://i.imgur.com/D0mgDxd.gif', 'https://i.imgur.com/rDoj4A3.gif', 'https://i.imgur.com/wCxxqQT.gif', 'https://i.imgur.com/5llADh7.gif', 'https://i.imgur.com/hUxrTr5.gif', 'https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
         exactMatch: true,
         delay: 1000
     },
