@@ -16,6 +16,8 @@ const COMMANDS = {
     RULES: '.rules',
     COUGH: '.cough'
 };
+// timeout refreshes the page
+//setTimeout(function(){ location.reload(); }, 1*30*1000 );
 const rules_time = 1000 * 60 * 13;
 const suggestion_time = 1000 * 60 * 10;
 // Rate limiting configuration
@@ -67,6 +69,18 @@ const MESSAGES = {
 
 // Simple Commands - Easy to add new trigger/response pairs
 const SIMPLE_COMMANDS = [
+    {
+        trigger: 'bing',
+        responses: 'BONG',
+        exactMatch: false,
+        delay: 1000
+    },
+    {
+        trigger: 'ding',
+        responses: 'DONG',
+        exactMatch: false,
+        delay: 1000
+    },
     {
         trigger: '.lol',
         responses: ['https://i.imgur.com/nOKn7EQ.gif', 'https://i.imgur.com/WUnfz9y.gif', 'https://i.imgur.com/D0mgDxd.gif', 'https://i.imgur.com/rDoj4A3.gif', 'https://i.imgur.com/wCxxqQT.gif', 'https://i.imgur.com/5llADh7.gif', 'https://i.imgur.com/hUxrTr5.gif', 'https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
