@@ -70,6 +70,12 @@ const MESSAGES = {
 // Simple Commands - Easy to add new trigger/response pairs
 const SIMPLE_COMMANDS = [
     {
+        trigger: '.like',
+        responses: 'https://i.imgur.com/MQVwtvp.png',
+        exactMatch: true,
+        delay: 1000
+    },
+    {
         trigger: '.dislike',
         responses: 'https://i.imgur.com/6NeuscK.jpeg',
         exactMatch: true,
