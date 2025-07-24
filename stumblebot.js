@@ -76,6 +76,12 @@ const SIMPLE_COMMANDS = [
         delay: 1000
     },
     {
+        trigger: '.gino',
+        responses: 'https://i.imgur.com/MQVwtvp.png',
+        exactMatch: true,
+        delay: 1000
+    },
+    {
         trigger: '.dislike',
         responses: 'https://i.imgur.com/6NeuscK.jpeg',
         exactMatch: true,
