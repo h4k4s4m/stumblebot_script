@@ -71,7 +71,7 @@ const MESSAGES = {
 const SIMPLE_COMMANDS = [
     {
         trigger: '.like',
-        responses: 'https://i.imgur.com/MQVwtvp.png',
+        responses: 'https://i.imgur.com/gsH77T5.png',
         exactMatch: true,
         delay: 1000
     },
