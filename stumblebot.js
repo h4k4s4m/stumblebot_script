@@ -22,8 +22,8 @@ const rules_time = 1000 * 60 * 13;
 const suggestion_time = 1000 * 60 * 10;
 // Rate limiting configuration
 const RATE_LIMIT = {
-    MESSAGE_DELAY: 1200, // Milliseconds between messages
-    PRIORITY_DELAY: 500  // Milliseconds between priority messages
+    MESSAGE_DELAY: 600, // Milliseconds between messages (reduced from 1200)
+    PRIORITY_DELAY: 250  // Milliseconds between priority messages (reduced from 500)
 };
 const MESSAGES = {
     FOUR_TWENTY: '🌲 It\'s 4:20 somewhere! Smoke em if you got em! 💨',
@@ -73,67 +73,67 @@ const SIMPLE_COMMANDS = [
         trigger: '.like',
         responses: 'https://i.imgur.com/gsH77T5.png',
         exactMatch: true,
-        delay: 1000
+        delay: 500
     },
     {
         trigger: '.gino',
         responses: 'https://i.imgur.com/MQVwtvp.png',
         exactMatch: true,
-        delay: 1000
+        delay: 500
     },
     {
         trigger: '.dislike',
         responses: 'https://i.imgur.com/6NeuscK.jpeg',
         exactMatch: true,
-        delay: 1000
+        delay: 500
     },
     {
         trigger: 'bing',
         responses: 'BONG',
         exactMatch: false,
-        delay: 1000
+        delay: 500
     },
     {
         trigger: 'ding',
         responses: 'DONG',
         exactMatch: false,
-        delay: 1000
+        delay: 500
     },
     {
         trigger: '.lol',
         responses: ['https://i.imgur.com/nOKn7EQ.gif', 'https://i.imgur.com/WUnfz9y.gif', 'https://i.imgur.com/D0mgDxd.gif', 'https://i.imgur.com/rDoj4A3.gif', 'https://i.imgur.com/wCxxqQT.gif', 'https://i.imgur.com/5llADh7.gif', 'https://i.imgur.com/hUxrTr5.gif', 'https://i.imgur.com/Z4jeEDC.gif', 'https://i.imgur.com/JSpPZcz.gif', 'https://i.imgur.com/p5CVPbS.gif', 'https://i.imgur.com/InWpJGu.gif', 'https://i.imgur.com/lGekj1R.gif', 'https://i.imgur.com/PuIwtix.gif', 'https://i.imgur.com/sFawfo4.gif', 'https://i.imgur.com/1KYMAnW.gif', 'https://i.imgur.com/C5kQqV8.gif', 'https://i.imgur.com/jtQtctL.gif', 'https://i.imgur.com/YVWzZFm.gif', 'https://i.imgur.com/DM7alJx.gif', 'https://i.imgur.com/bJ0k2fU.gif'],
         exactMatch: true,
-        delay: 1000
+        delay: 500
     },
     {
         trigger: '.awkward',
         responses: ['https://i.imgur.com/tMdFwsj.gif', 'https://i.imgur.com/3LvlcuK.gif', 'https://i.imgur.com/YL653SL.gif', 'https://i.imgur.com/yq09vPQ.gif', 'https://i.imgur.com/PU1ZEy5.gif', 'https://i.imgur.com/r4guIoh.gif', 'https://i.imgur.com/URccR9g.gif'],
         exactMatch: true,
-        delay: 1000
+        delay: 500
     },
     {
         trigger: '.dance',
         responses: ['https://i.imgur.com/LqqNkMr.gif', 'https://i.imgur.com/S67B5Qg.gif', 'https://i.imgur.com/RFXZRIe.gif', 'https://i.imgur.com/yFEHuu6.gif', 'https://i.imgur.com/N6XZZGI.gif', 'https://i.imgur.com/ghSQMF9.gif'],
         exactMatch: true,
-        delay: 1000
+        delay: 500
     },
     {
         trigger: 'ping',
         responses: ['PONG'],
         exactMatch: false,
-        delay: 1000
+        delay: 500
     },
     {
         trigger: '.welcome',
         responses: ['https://i.imgur.com/1EKKO9F.gif', 'https://i.imgur.com/2rN7SAp.gif', 'https://i.imgur.com/i35cIUb.gif', 'https://i.imgur.com/Jw1MNWu.gif', 'https://i.imgur.com/TeWCGJ7.gif'],
         exactMatch: false,
-        delay: 500
+        delay: 250
     },
     {
         trigger: '.warning',
         responses: ['https://i.imgur.com/zfVJFh1.gif'],
         exactMatch: false,
-        delay: 500
+        delay: 250
     }
     // Add more simple commands here! Format:
     // {
@@ -415,16 +415,36 @@ class CommandHandler {
 
     handleCommandsList(websocket) {
         const commandsList = [
+            '🤖 Available Commands:',
+            '',
+            '📺 Media Commands:',
             `- ${COMMANDS.YT} [query] - Play a YouTube video`,
+            '',
+            '🌿 Session Commands:',
             `- ${COMMANDS.TOKE.join('/')} [seconds] - Start a toke countdown (10-300 seconds)`,
-            `- ${COMMANDS.CHEERS} - Share a friendly cheers with the room`,
-            `- ${COMMANDS.RULES} - Show the room rules`,
             `- ${COMMANDS.COUGH} - Send a coughing sequence`,
+            `- ${COMMANDS.CHEERS} - Share a friendly cheers with the room`,
+            '',
+            '📋 Info Commands:',
+            `- ${COMMANDS.RULES} - Show the room rules`,
             `- ${COMMANDS.COMMANDS.join('/')} - List all commands`,
-            `- .lol - Send a random funny GIF`,
-            `- .welcome - Send a welcome GIF`,
-            `- .warning - Send a warning GIF`,
-            `- ping - Responds with PONG`
+            '',
+            '🎭 Fun Commands:',
+            '- .lol - Send a random funny GIF',
+            '- .awkward - Send an awkward moment GIF',
+            '- .dance - Send a dancing GIF',
+            '- .welcome - Send a welcome GIF',
+            '- .warning - Send a warning GIF',
+            '',
+            '🖼️ Image Commands:',
+            '- .like - Send a like image',
+            '- .dislike - Send a dislike image',
+            '- .gino - Send a gino image',
+            '',
+            '🔊 Sound Commands:',
+            '- ping - Responds with PONG',
+            '- bing - Responds with BONG',
+            '- ding - Responds with DONG'
         ];
 
         // Queue all commands with a slight priority so they appear in order
@@ -438,16 +458,16 @@ class CommandHandler {
             command.responses[Math.floor(Math.random() * command.responses.length)] :
             command.responses;
 
-        setTimeout(() => this.sendMessage(websocket, response), command.delay || 1000);
+        setTimeout(() => this.sendMessage(websocket, response), command.delay || 500);
     }
 
     handleCough(websocket) {
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH), 1000);
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 1300);
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH3), 1600);
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH4), 1900);
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH5), 2200);
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH6), 2500);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH), 500);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 650);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH3), 800);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH4), 950);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH5), 1100);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH6), 1250);
     }
 
     handleCheers(handle, websocket) {
@@ -500,12 +520,12 @@ class CommandHandler {
                 const remainingTime = endTime - currentTime;
                 setTimeout(() => {
                     this.sendMessage(websocket, MESSAGES.TOKE_FINAL);
-                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH), 1000);
-                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 1300);
-                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH3), 1600);
-                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH4), 1900);
-                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH5), 2200);
-                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH6), 2500);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH), 500);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 650);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH3), 800);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH4), 950);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH5), 1100);
+                    setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH6), 1250);
                     TimerState.tokeCountdownInterval = null;
                     TimerState.tokeCountdownActive = false;
                     TimerState.lastRulesPost = new Date().getTime();
@@ -569,7 +589,7 @@ class CommandHandler {
 
             if (TimerState.shouldSendMessage) {
                 TimerState.shouldSendMessage = false;
-                setTimeout(() => messageQueue.addMessage(this, JSON.stringify({ stumble: 'msg', text: MESSAGES.FOUR_TWENTY }), true), 1000);
+                setTimeout(() => messageQueue.addMessage(this, JSON.stringify({ stumble: 'msg', text: MESSAGES.FOUR_TWENTY }), true), 500);
             }
 
             commandHandler.handleCommand(wsmsg, this);
