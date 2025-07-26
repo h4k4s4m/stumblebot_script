@@ -82,6 +82,12 @@ const SIMPLE_COMMANDS = [
         delay: 500
     },
     {
+        trigger: '.emo',
+        responses: 'https://i.imgur.com/h13RC7W.png',
+        exactMatch: true,
+        delay: 500
+    },
+    {
         trigger: '.dislike',
         responses: 'https://i.imgur.com/6NeuscK.jpeg',
         exactMatch: true,
@@ -435,6 +441,7 @@ class CommandHandler {
             '- .like - Send a like image',
             '- .dislike - Send a dislike image',
             '- .gino - Send a gino image',
+            '- .emo - Send an emo image',
             '🔊 Sound Commands:',
             '- ping - Responds with PONG',
             '- bing - Responds with BONG',
