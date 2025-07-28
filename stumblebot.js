@@ -22,8 +22,8 @@ const rules_time = 1000 * 60 * 13;
 const suggestion_time = 1000 * 60 * 10;
 // Rate limiting configuration
 const RATE_LIMIT = {
-    MESSAGE_DELAY: 600, // Milliseconds between messages (reduced from 1200)
-    PRIORITY_DELAY: 250  // Milliseconds between priority messages (reduced from 500)
+    MESSAGE_DELAY: 1000, // Milliseconds between messages (reduced from 1200)
+    PRIORITY_DELAY: 500  // Milliseconds between priority messages (reduced from 500)
 };
 const MESSAGES = {
     FOUR_TWENTY: '🌲 It\'s 4:20 somewhere! Smoke em if you got em! 💨',
@@ -464,12 +464,12 @@ class CommandHandler {
     }
 
     handleCough(websocket) {
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH), 500);
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 650);
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH3), 800);
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH4), 950);
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH5), 1100);
-        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH6), 1250);
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH), 850);    // 500 + 70% = 850
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH2), 1105);  // 650 + 70% = 1105
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH3), 1360);  // 800 + 70% = 1360
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH4), 1615);  // 950 + 70% = 1615
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH5), 1870);  // 1100 + 70% = 1870
+        setTimeout(() => this.sendMessage(websocket, MESSAGES.COUGH6), 2125);  // 1250 + 70% = 2125
     }
 
     handleCheers(handle, websocket) {
