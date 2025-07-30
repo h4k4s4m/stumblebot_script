@@ -138,7 +138,7 @@ const SIMPLE_COMMANDS = [
     },
     {
         trigger: '.warning',
-        responses: ['https://i.imgur.com/zfVJFh1.gif'],
+        responses: ['https://i.imgur.com/zfVJFh1.gif', 'https://i.imgur.com/auQ1kGq.gif',],
         exactMatch: false,
         delay: 250
     }
